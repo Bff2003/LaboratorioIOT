@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicação</title>
+</head>
+<body>
+
+    <h1>Sensores</h1>
+    <label for="temperatura">Temperatura:</label>
+    <input type="text" id="temperatura" name="temperatura" disabled><br><br>
+
+    <label for="lux">Luminosidade:</label>
+    <input type="text" id="lux" name="lux" disabled><br><br>
+
+    <h1>Estado de Objetos</h1>
+    <label for="tomada1">Tomada1: </label>
+    <input type="checkbox" id="tomada1" name="tomada1" disabled><br><br>
+
+    <label for="tomada2">Tomada2: </label>
+    <input type="checkbox" id="tomada2" name="tomada2" disabled><br><br>
+
+    <h1>Tomadas</h1>
+    <h2>Tomada 1</h2>
+    <button id="tomada1_on">Ligar</button>
+    <button id="tomada1_off">Desligar</button>
+
+    <h2>Tomada 2</h2>
+    <button id="tomada2_on">Ligar</button>
+    <button id="tomada2_off">Desligar</button>
+    
+    <script>
+
+        
+
+        //set timer to update sensor values 5 seconds
+        // setInterval(async function(){
+        //     let xhttp = new XMLHttpRequest();
+        //     let tomada1 = await fetch(proxyCORS + "http://emoncms.org/input/get/1/tomada1?apikey=edaca87fdb9489eaf36b69a2ac42b36d");
+        //     // put in tomada 1 checkbox the value of tomada1
+        //     document.getElementById("tomada1").checked = ((await tomada1.json()).value == 1) ? true : false;
+
+        // }, 10000);
+        
+        let proxyCORS = "https://cors-anywhere.herokuapp.com/";
+        async function fazReq(){
+            let xhttp = new XMLHttpRequest();
+            // let tomada1 = await fetch(proxyCORS + "http://emoncms.org/input/get/1/tomada1?apikey=edaca87fdb9489eaf36b69a2ac42b36d");
+
+            // do request and add header Access-Control-Allow-Origin and save data in tomada1
+            let tomada1 = await fetch(proxyCORS+ "http://emoncms.org/input/get/1/tomada1?apikey=edaca87fdb9489eaf36b69a2ac42b36d", {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                }
+            });
+            
+            console.log(await tomada1.json());
+            // put in tomada 1 checkbox the value of tomada1
+            document.getElementById("tomada1").checked = ((await tomada1.json()).value == 1) ? true : false;
+        }
+        
+    </script>
+</body>
+</html>
