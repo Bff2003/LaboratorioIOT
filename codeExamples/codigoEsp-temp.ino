@@ -11,6 +11,10 @@ float lerTemperatura(){
     return dht.readTemperature();
 }
 
+float lerUmidade(){
+    return dht.readHumidity();
+}
+
 void setup() {
   Serial.begin(9600);
   dht.begin();
