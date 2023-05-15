@@ -13,16 +13,14 @@ DHT dht(DHTPIN, DHT22);
 BH1750 lightMeter;
 
 // Wifi
-#include <ESP8266Wifi.h>
+#include <ESP8266WiFi.h>
 const char* ssid = "sensornet";
-const char* password = 'sensor123';
+const char* password = "sensor123";
 WiFiClient espClient = WiFiClient();
 
 // MQTT
 #include <PubSubClient.h>
-const char* mqtt_server = ""
-const char* mqtt_topic_temperatura = "sensor/temperatura";
-const char* mqtt_topic_lux = "sensor/lux";
+const char* mqtt_server = "192.168.1.158";
 PubSubClient client = PubSubClient(espClient);
 
 // ###############################
@@ -31,15 +29,21 @@ PubSubClient client = PubSubClient(espClient);
 
 // Sensor de temperatura
 float lerTemperatura(){
+    Serial.print("Temperatura: ");
+    Serial.println(dht.readTemperature());
     return dht.readTemperature();
 }
 
 float lerUmidade(){
+    Serial.print("Umidade: ");
+    Serial.println(dht.readHumidity());
     return dht.readHumidity();
 }
 
 // Sensor de luminosidade
 uint16_t lerLux(){
+    Serial.print("Luminuisidade: ");
+    Serial.println(lightMeter.readLightLevel());
     return lightMeter.readLightLevel();
 }
 
@@ -59,7 +63,7 @@ void reconnect() {
     // Conexão com o servidor MQTT
     if (client.connect("ESP8266Client")) {
       // Assinatura do tópico MQTT
-      client.subscribe(mqtt_topic);
+      //client.subscribe(mqtt_topic);
     } else {
       // Aguardar 5 segundos antes de tentar novamente
       delay(5000);
