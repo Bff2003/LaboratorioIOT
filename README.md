@@ -39,6 +39,11 @@ Casa Inteligente
     - VCC -> 3V3
 
 ### Second ESP
+- 3x Tomada (RSL-3660R)
+- 1x Sensor de RF: (XD-FST)
+    - VCC -> 3.3V
+    - GND -> GND
+    - DATA -> D4 (GPIO2)
 
 ## APP 
 
