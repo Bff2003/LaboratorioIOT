@@ -38,7 +38,7 @@ class Tomada {
         bool estaLigada(){
             return this->ligada;
         }
-}
+};
 
 // array de tomadas
 Tomada tomadas[3] = {
