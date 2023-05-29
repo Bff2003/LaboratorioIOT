@@ -1,7 +1,7 @@
 #include <RCSwitch.h>
+#include <ArduinoJson.h>
 
 RCSwitch mySwitch = RCSwitch(); // Instância o objeto mySwitch
-
 
 // Wifi
 #include <ESP8266WiFi.h>
@@ -80,6 +80,7 @@ Tomada tomadas[3] = {
 
 // Sensor de temperatura
 void callback(char* topic, byte* payload, unsigned int length) {
+  
   // Verificar se o tópico é o desejado
   if (strcmp(topic, "tomadas") == 0) {
     // Criar uma string para armazenar o payload
@@ -89,12 +90,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     memcpy(mensagem, payload, length);
     mensagem[length] = '\0'; // Adicionar o caractere nulo de terminação da string
 
-    // Processar a mensagem recebida
-    Serial.print("Mensagem recebida: ");
-    Serial.println(mensagem);
+     // Fazer o parse do JSON
+    DynamicJsonDocument jsonDoc(1024); // Tamanho máximo do JSON
 
-    // Fazer o parse do JSON
-    DynamicJsonDocument jsonDoc(200);
     DeserializationError error = deserializeJson(jsonDoc, mensagem);
 
     // Verificar erros de parse
@@ -109,10 +107,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     int estado = jsonDoc["estado"];
 
     // Fazer algo com os valores extraídos do JSON
-    Serial.print("ID: ");
+    Serial.print("Tomada recebida ID: ");
     Serial.println(id);
-    Serial.print("Estado: ");
+    Serial.print("Estado da tomada: ");
     Serial.println(estado);
+
     if (estado == 1){
         tomadas[id-1].ligar();
     } else {
