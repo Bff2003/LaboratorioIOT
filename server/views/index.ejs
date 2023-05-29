@@ -1,11 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <title>App Pica</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="requisicaoAPI.js"></script>
 </head>
 <body>
-    <h1>Ola</h1>
+  <h1>App Pica</h1>
+  
+  <div class="value-display">
+    <label>Temperatura</label>
+    <span class="value">100</span>
+    <span class="unit">ºC</span>
+  </div>
+  <div class="value-display">
+    <label>Humidade</label>
+    <span class="value">40</span>
+  </div>
+  <div class="value-display">
+    <label>Luz</label>
+    <span class="value">80</span>
+  </div>
+  <br><br>
+
+  <div class="switch">
+    <input type="checkbox" id="switch1" onclick="showStatus('switch1')">
+    <label class="slider" for="switch1"></label>
+  </div>
+  <span class="label">Modo automático: <span id="status1">OFF</span></span>
+  <br><br>
+  
+  <div class="switch">
+    <input type="checkbox" id="switch2" onclick="showStatus('switch2')" disabled>
+    <label class="slider" for="switch2"></label>
+  </div>
+  <span class="label">Tomada 1: <span id="status2">OFF</span></span>
+  <br><br>
+  
+  <div class="switch">
+    <input type="checkbox" id="switch3" onclick="showStatus('switch3')" disabled>
+    <label class="slider" for="switch3"></label>
+  </div>
+  <span class="label">Tomada 2: <span id="status3">OFF</span></span>
+  <br><br>
+  
+  <div class="switch">
+    <input type="checkbox" id="switch4" onclick="showStatus('switch4')" disabled>
+    <label class="slider" for="switch4"></label>
+  </div>
+  <span class="label">Tomada 3: <span id="status4">OFF</span></span>
+
+  <script>
+    function showStatus(switchId) {
+      var statusLabel = document.getElementById('status' + switchId.slice(-1));
+      var switchElement = document.getElementById(switchId);
+      statusLabel.textContent = switchElement.checked ? 'ON' : 'OFF';
+      
+      // Disable or enable switches 2, 3, and 4 based on the status of switch 1
+      var switch1 = document.getElementById('switch1');
+      var switch2 = document.getElementById('switch2');
+      var switch3 = document.getElementById('switch3');
+      var switch4 = document.getElementById('switch4');
+      
+      if (switch1.checked) {
+        switch2.checked = false;
+        switch3.checked = false;
+        switch4.checked = false;
+        switch2.disabled = true;
+        switch3.disabled = true;
+        switch4.disabled = true;
+        document.getElementById('status2').textContent = 'OFF';
+        document.getElementById('status3').textContent = 'OFF';
+        document.getElementById('status4').textContent = 'OFF';
+      } else {
+        switch2.disabled = false;
+        switch3.disabled = false;
+        switch4.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
