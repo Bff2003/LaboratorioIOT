@@ -14,13 +14,29 @@ class Server {
                 file: { type: 'file', filename: 'logs/app.log' }
             },
             categories: {
-                default: { appenders: ['console', 'file'], level: 'debug' }
+                default: { appenders: [
+                    // 'console', 
+                    'file'
+                ], level: 'debug' }
             }
         });
         this.log = log4js.getLogger("Server log");
         this.log.level = 'debug';
         this.log.info('Server started');
-
+        
+        this.tomadas = [{"id": 1, "estado": 0}, {"id": 2, "estado": 0}, {"id": 3, "estado": 0}]
+        
+        this.automaticMode = {
+            "state": true,
+            "temperatura": {
+                "min": 20,
+                "max": 25
+            },
+            "lux": {
+                "min": 100,
+                "max": 200
+            }
+        }
 
         // logger.trace('Trace message');
         // logger.debug('Debug message');
@@ -42,7 +58,7 @@ class Server {
     }
 
     // Subscribe to a topic MQTT
-    sbuscribeMqtt(topicToSubscribe, onMessage = async (topic, message) => { console.log(topic + " - " + message); this.log.info(topic + " - " + message); }) {
+    async subscribeMqtt(topicToSubscribe, onMessage = async (topic, message) => { console.log(topic + " - " + message); this.log.info(topic + " - " + message); }) {
         this.mqttClient.subscribe(topicToSubscribe, { qos: 0 });
         this.log.info('Subscribed to topic: ' + topicToSubscribe);
         this.mqttClient.on('message', onMessage);
@@ -87,11 +103,101 @@ class Server {
         return response.data;
     }
 
+    turnOnTomada(id) {
+        this.tomadas[id-1].estado = 1;
+        this.publishMqtt("tomadas", JSON.stringify({"id": id, "estado": 1}));
+        const obj = { ["tomada" + id]: '1' };
+        this.sendDataToEmoncms(1, obj);
+        this.log.info("Tomada " + id + " ligada!");
+    }
+
+    turnOffTomada(id) {
+        this.tomadas[id-1].estado = 0;
+        this.publishMqtt("tomadas", JSON.stringify({"id": id, "estado": 0}));
+        const obj = { ["tomada" + id]: '0' };
+        this.sendDataToEmoncms(1, obj);
+        this.log.info("Tomada " + id + " desligada!");
+    }
+
+    turnOnAllTomadas() {
+        this.tomadas.forEach(tomada => {
+            this.turnOnTomada(tomada.id);
+        });
+    }
+
+    turnOffAllTomadas() {
+        this.tomadas.forEach(tomada => {
+            this.turnOffTomada(tomada.id);
+        });
+    }
+
+    // create endpoints for the API 'api/automaticMode'
+    async createEndpoints() {
+        this.app.get('/api/automaticMode', (req, res) => {
+            res.send(this.automaticMode.state);
+        });
+
+        this.app.post('/api/automaticMode', (req, res) => {
+            this.automaticMode.state = req.body.automaticMode;
+            // expect 1 or 0
+            if (req.body.automaticMode == undefined || (req.body.automaticMode != 1 && req.body.automaticMode != 0)) {
+                res.status(400).send("Bad request");
+                return;
+            }
+            res.send(this.automaticMode.state);
+        });
+
+        this.app.post('/api/automaticMode/temperatura', (req, res) => {
+            // excepcted {"min": 15, "max": 25}
+            if (req.body.min == undefined || req.body.max == undefined || req.body.min > req.body.max || req.body.min < 0 || req.body.max > 100) {
+                res.status(400).send("Bad request");
+                return;
+            }
+            this.automaticMode.temperatura = req.body;
+        });
+    }
+
     // Start the server
     async start() {
-        // this.sendDataToEmoncms(1, { "tomada1": 1, "tomada2": 0 });
-        // console.log((await this.getDataFromInputInEmoncms("tomada1")).value);
-        console.log((await this.getDataFromAllInputsInEmoncms()));
+        this.app.listen(this.port, () => {
+            this.log.info('Server running on port ' + this.port);
+        });
+
+        this.createEndpoints();
+
+        // subscribe to the topic "sensor/temperatura" and "sensor/humidade" and "sensor/lux" in the MQTT broker and send the data to emoncms
+        this.connectMqtt("localhost", 1884); // connect to the MQTT broker
+        this.subscribeMqtt("sensor/temperatura", async (topic, message) => {
+            this.sendDataToEmoncms(1, { "temperatura": parseFloat(message) });
+            console.log("temperatura: " + message);
+
+            // if temperature is below 15ºC, turn off all tomadas
+            if (this.automaticMode.state && parseFloat(message) < this.automaticMode.temperatura.min) {
+                this.log.info("Ligar tomadas! Temperatura abaixo de 20ºC");
+                console.log("Ligar tomadas! Temperatura abaixo de 20ºC");
+                this.turnOnAllTomadas();
+            } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.temperatura.max) {
+                this.log.info("Desligar tomadas! Temperatura acima de 25ºC");
+                console.log("Desligar tomadas! Temperatura acima de 25ºC");
+                this.turnOffAllTomadas();
+            }
+        });
+        this.subscribeMqtt("sensor/humidade", async (topic, message) => {
+            this.sendDataToEmoncms(1, { "humidade": parseFloat(message) });
+            console.log("humidade: " + message);
+        });
+        this.subscribeMqtt("sensor/lux", async (topic, message) => {
+            this.sendDataToEmoncms(1, { "lux": parseFloat(message) });
+            console.log("lux: " + message);
+
+            if (this.automaticMode.state && parseFloat(message) < this.automaticMode.lux.min) {
+                console.log("ligar luzes! Lux abaixo de 100");
+                this.log.info("Ligar luzes! Lux abaixo de 100");
+            } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.lux.max) {
+                console.log("desligar luzes! Lux acima de 200");
+                this.log.info("Desligar luzes! Lux acima de 200");
+            }
+        });
     }
 }
 
