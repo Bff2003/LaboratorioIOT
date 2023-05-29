@@ -147,6 +147,10 @@ class Server {
             res.send(this.automaticMode.state);
         });
 
+        this.app.get('/api/automaticMode/temperatura', (req, res) => {
+            res.send(this.automaticMode.temperatura);
+        });
+
         this.app.post('/api/automaticMode/temperatura', (req, res) => {
             // excepcted {"min": 15, "max": 25}
             if (req.body.min == undefined || req.body.max == undefined || req.body.min > req.body.max || req.body.min < 0 || req.body.max > 100) {
@@ -155,6 +159,20 @@ class Server {
             }
             this.automaticMode.temperatura = req.body;
         });
+
+        this.app.get('/api/automaticMode/lux', (req, res) => {
+            res.send(this.automaticMode.lux);
+        });
+
+        this.app.post('/api/automaticMode/lux', (req, res) => {
+            // excepcted {"min": 15, "max": 25}
+            if (req.body.min == undefined || req.body.max == undefined || req.body.min > req.body.max || req.body.min < 0 || req.body.max > 100) {
+                res.status(400).send("Bad request");
+                return;
+            }
+            this.automaticMode.lux = req.body;
+        });
+
     }
 
     // Start the server
@@ -173,12 +191,12 @@ class Server {
 
             // if temperature is below 15ºC, turn off all tomadas
             if (this.automaticMode.state && parseFloat(message) < this.automaticMode.temperatura.min) {
-                this.log.info("Ligar tomadas! Temperatura abaixo de 20ºC");
-                console.log("Ligar tomadas! Temperatura abaixo de 20ºC");
+                this.log.info(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
+                console.log(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
                 this.turnOnAllTomadas();
             } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.temperatura.max) {
-                this.log.info("Desligar tomadas! Temperatura acima de 25ºC");
-                console.log("Desligar tomadas! Temperatura acima de 25ºC");
+                this.log.info(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
+                console.log(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
                 this.turnOffAllTomadas();
             }
         });
@@ -189,13 +207,12 @@ class Server {
         this.subscribeMqtt("sensor/lux", async (topic, message) => {
             this.sendDataToEmoncms(1, { "lux": parseFloat(message) });
             console.log("lux: " + message);
-
             if (this.automaticMode.state && parseFloat(message) < this.automaticMode.lux.min) {
-                console.log("ligar luzes! Lux abaixo de 100");
-                this.log.info("Ligar luzes! Lux abaixo de 100");
+                console.log(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
+                this.log.info(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
             } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.lux.max) {
-                console.log("desligar luzes! Lux acima de 200");
-                this.log.info("Desligar luzes! Lux acima de 200");
+                console.log(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
+                this.log.info(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
             }
         });
     }
