@@ -85,8 +85,9 @@ Tópicos MQTT:
     - DATA -> D4 (GPIO2)
 
 ## APP 
-
 - [Android APP](./APP/README.md)
+## Servidor
+- [Servidor](./server/README.md)
 
 ## Estrutura do Projeto
 ![photo1685357278.jpeg](images/photo1685357278.jpeg)
