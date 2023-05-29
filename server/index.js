@@ -38,6 +38,10 @@ class Server {
             }
         }
 
+        this.app.set('view engine', 'ejs');
+        console.log(__dirname+'\\views');
+        this.app.set('views', __dirname + '\\views');
+
         // logger.trace('Trace message');
         // logger.debug('Debug message');
         // logger.info('Info message');
@@ -173,12 +177,18 @@ class Server {
             this.automaticMode.lux = req.body;
         });
 
+        this.app.get('/', (req, res) => {
+            res.render('index', null);
+        });
+
+
     }
 
     // Start the server
     async start() {
-        this.app.listen(this.port, () => {
+        this.app.listen(3000, () => {
             this.log.info('Server running on port ' + this.port);
+            console.log('Server running on port ' + this.port);
         });
 
         this.createEndpoints();
