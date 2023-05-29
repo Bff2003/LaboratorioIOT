@@ -63,10 +63,10 @@ void reconnect() {
     // Conexão com o servidor MQTT
     if (client.connect("ESP8266Client")) {
       // Assinatura do tópico MQTT
-      //client.subscribe(mqtt_topic);
+      client.subscribe("sensor/temperatura");
     } else {
       // Aguardar 5 segundos antes de tentar novamente
-      delay(5000);
+      delay(1000);
     }
   }
 }
@@ -77,6 +77,7 @@ void reconnect() {
 
 void setup(){
     Serial.begin(9600);
+    Serial.println("Ola1");
 
     // setup temperatura
     dht.begin();
@@ -89,7 +90,7 @@ void setup(){
     setup_wifi();
 
     // Inicializa o cliente MQTT
-    client.setServer(mqtt_server, 1883);
+    client.setServer(mqtt_server, 1884);
 }
 
 void loop(){
@@ -99,11 +100,10 @@ void loop(){
     }
     // Verifica se há mensagens para serem enviadas
     client.loop();
-
     // Envia dados
     client.publish("sensor/temperatura", String(lerTemperatura()).c_str());
     client.publish("sensor/lux", String(lerLux()).c_str());
-    client.publish("sensor/umidade", String(lerUmidade()).c_str());
+    client.publish("sensor/humidade", String(lerUmidade()).c_str());
 
     // Aguarda 1 segundo
     delay(1000);
