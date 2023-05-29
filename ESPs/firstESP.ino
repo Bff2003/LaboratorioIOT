@@ -2,6 +2,8 @@
 // # Bibliotecas e configurações #
 // ###############################
 
+#include <ArduinoJson.h>
+
 // sensor de temperatura
 #include <DHT.h>
 #define DHTPIN 5 // D1
@@ -28,6 +30,22 @@ PubSubClient client = PubSubClient(espClient);
 // ###############################
 
 // Sensor de temperatura
+void callback(char* topic, byte* payload, unsigned int length) {
+  // Verificar se o tópico é o desejado
+  if (strcmp(topic, "tomadas") == 0) {
+    // Criar uma string para armazenar o payload
+    char mensagem[length + 1]; // +1 para o caractere nulo de terminação da string
+
+    // Copiar os bytes do payload para a string
+    memcpy(mensagem, payload, length);
+    mensagem[length] = '\0'; // Adicionar o caractere nulo de terminação da string
+
+    // Processar a mensagem recebida
+    Serial.print("Mensagem recebida: ");
+    Serial.println(mensagem);
+  }
+}
+
 float lerTemperatura(){
     Serial.print("Temperatura: ");
     Serial.println(dht.readTemperature());
@@ -91,6 +109,7 @@ void setup(){
 
     // Inicializa o cliente MQTT
     client.setServer(mqtt_server, 1884);
+    client.setCallback(callback);
 }
 
 void loop(){
@@ -104,6 +123,7 @@ void loop(){
     client.publish("sensor/temperatura", String(lerTemperatura()).c_str());
     client.publish("sensor/lux", String(lerLux()).c_str());
     client.publish("sensor/humidade", String(lerUmidade()).c_str());
+    client.subscribe("tomadas");
 
     // Aguarda 1 segundo
     delay(1000);
