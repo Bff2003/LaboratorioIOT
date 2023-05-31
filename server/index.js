@@ -62,7 +62,7 @@ class Server {
     }
 
     // Subscribe to a topic MQTT
-    async subscribeMqtt(topicToSubscribe, onMessage = async (topic, message) => { console.log(topic + " - " + message); this.log.info(topic + " - " + message); }) {
+    subscribeMqtt(topicToSubscribe, onMessage = (topic, message) => { console.log(topic + " - " + message); this.log.info(topic + " - " + message); }) {
         this.mqttClient.subscribe(topicToSubscribe, { qos: 0 });
         this.log.info('Subscribed to topic: ' + topicToSubscribe);
         this.mqttClient.on('message', onMessage);
@@ -76,7 +76,7 @@ class Server {
 
     // Send some data to a node in emoncms
     sendDataToEmoncms(node, data) {
-        axios.post(process.env.EMONCMS_URL + "/input/post?node=" + process.env.EMONCMS_NODE + "&fulljson=" + JSON.stringify(data) + "&apikey=" + process.env.EMONCMS_APIKEY)
+        axios.post(process.env.EMONCMS_URL + "/input/post?node=" + node + "&fulljson=" + JSON.stringify(data) + "&apikey=" + process.env.EMONCMS_APIKEY)
             .then((response) => {
                 this.log.info("Data sent to Emoncms");
             })
@@ -86,9 +86,21 @@ class Server {
     }
 
     // Get data from emoncms
-    async getDataFromInputInEmoncms(inputName) {
+    async getDataFromInputInEmoncms(node, inputName) {
         // let response = await axios.get(process.env.EMONCMS_URL + "/feed/list.json?apikey=" +     process.env.EMONCMS_APIKEY);
-        let response = await axios.get(process.env.EMONCMS_URL + "/input/get/"+ process.env.EMONCMS_NODE +"/"+inputName+"?apikey=" + process.env.EMONCMS_APIKEY);
+        let response = await axios.get(process.env.EMONCMS_URL + "/input/get/"+ node +"/"+inputName+"?apikey=" + process.env.EMONCMS_APIKEY);
+        if (response.status != 200) { // If the status code is not 200, there was an error
+            this.log.error("Error getting data from Emoncms - Status code: " + response.status + " - " + response.statusText);
+            return;
+        }
+        this.log.info("Data received from Emoncms");
+        return response.data;
+    }
+
+    // Get all inputs from node in  emoncms
+    async getInputsFromNodeEmoncms(node) {
+        // let response = await axios.get(process.env.EMONCMS_URL + "/feed/list.json?apikey=" +     process.env.EMONCMS_APIKEY);
+        let response = await axios.get(process.env.EMONCMS_URL + "/input/get/"+ node +"?apikey=" + process.env.EMONCMS_APIKEY);
         if (response.status != 200) { // If the status code is not 200, there was an error
             this.log.error("Error getting data from Emoncms - Status code: " + response.status + " - " + response.statusText);
             return;
@@ -136,7 +148,7 @@ class Server {
     }
 
     // create endpoints for the API 'api/automaticMode'
-    async createEndpoints() {
+    async createEndpointsBack() {
         this.app.get('/api/automaticMode', (req, res) => {
             res.send(this.automaticMode.state);
         });
@@ -176,51 +188,50 @@ class Server {
             }
             this.automaticMode.lux = req.body;
         });
+    }
 
-        this.app.get('/', (req, res) => {
-            res.render('index', null);
-        });
-
-
+    createEndpointsFront() {
     }
 
     // Start the server
     async start() {
+        console.log("Starting server...");
+        console.log("EmonCMS URL: " + process.env.EMONCMS_URL+ "/input/view");
         this.app.listen(3000, () => {
-            this.log.info('Server running on port ' + this.port);
-            console.log('Server running on port ' + this.port);
+            this.log.info('Server running on port ' + 3000);
         });
 
-        this.createEndpoints();
+        this.createEndpointsBack(); // create endpoints for the API
+        this.createEndpointsFront(); // create endpoints for the front-end
 
         // subscribe to the topic "sensor/temperatura" and "sensor/humidade" and "sensor/lux" in the MQTT broker and send the data to emoncms
         this.connectMqtt("localhost", 1884); // connect to the MQTT broker
         this.subscribeMqtt("sensor/temperatura", async (topic, message) => {
-            this.sendDataToEmoncms(1, { "temperatura": parseFloat(message) });
-            console.log("temperatura: " + message);
+            this.sendDataToEmoncms(1, { "temperatura": parseFloat(message.toString()) });
+            console.log("temperatura: " + message + "ºC");
 
             // if temperature is below 15ºC, turn off all tomadas
-            if (this.automaticMode.state && parseFloat(message) < this.automaticMode.temperatura.min) {
+            if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.temperatura.min) {
                 this.log.info(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
                 console.log(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
                 this.turnOnAllTomadas();
-            } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.temperatura.max) {
+            } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.temperatura.max) {
                 this.log.info(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
                 console.log(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
                 this.turnOffAllTomadas();
             }
         });
         this.subscribeMqtt("sensor/humidade", async (topic, message) => {
-            this.sendDataToEmoncms(1, { "humidade": parseFloat(message) });
+            this.sendDataToEmoncms(1, { "humidade": parseFloat(message.toString()) });
             console.log("humidade: " + message);
         });
         this.subscribeMqtt("sensor/lux", async (topic, message) => {
-            this.sendDataToEmoncms(1, { "lux": parseFloat(message) });
+            this.sendDataToEmoncms(1, { "lux": parseFloat(message.toString()) });
             console.log("lux: " + message);
-            if (this.automaticMode.state && parseFloat(message) < this.automaticMode.lux.min) {
+            if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.lux.min) {
                 console.log(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
                 this.log.info(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
-            } else if (this.automaticMode.state && parseFloat(message) > this.automaticMode.lux.max) {
+            } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.lux.max) {
                 console.log(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
                 this.log.info(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
             }
@@ -230,4 +241,3 @@ class Server {
 
 let server = new Server();
 server.start();
-
