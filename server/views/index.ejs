@@ -89,63 +89,43 @@
         </div>
 
         <div class="linha">
-            <button id='btnAutomatico' <% if (automatico) { %> class="active" <% } %>>Automatico</button>
+            <button id='btnAutomatico'>Automatico</button>
         </div>
 
         <div class="linha">
-            <button id="btnTomada1" class="tomada <% if (tomada1) { %> active <% } %>">Tomada 1</button>
-            <button id="btnTomada2" class="tomada <% if (tomada2) { %> active <% } %>">Tomada 2</button>
+            <button id="btnTomada1" class="tomada">Tomada 1</button>
+            <button id="btnTomada2" class="tomada">Tomada 2</button>
         </div>
     </div>
 
     <script>
         // on click in button all buttons add class active
         const btnTomadas = document.querySelectorAll('.tomada');
-        btnTomadas.forEach(button => {
-            button.addEventListener('click', () => {
-                button.classList.toggle('active');
-            })
-        })
-
         let btnAutomatico = document.getElementById('btnAutomatico');
-        btnAutomatico.addEventListener('click', () => {
-            if (btnAutomatico.classList.contains('active')) {
-                btnAutomatico.classList.remove('active');
-                // enable all buttons
-                btnTomadas.forEach(button => {
-                    button.disabled = false;
-                })
-            } else{
-                btnAutomatico.classList.toggle('active');
-                // disable all buttons
-                btnTomadas.forEach(button => {
-                    button.classList.remove('active');
-                })
 
-                btnTomadas.forEach(button => {
-                    button.disabled = true;
-                })
-            }
-        })
+        let myIp = "<%= ip %>";
+        let port = <%= backendPort %>;
 
-        if (btnAutomatico.classList.contains('active')) {
-                btnAutomatico.classList.remove('active');
-                // enable all buttons
-                btnTomadas.forEach(button => {
-                    button.disabled = false;
-                })
-            } else{
-                btnAutomatico.classList.toggle('active');
-                // disable all buttons
-                btnTomadas.forEach(button => {
-                    button.classList.remove('active');
-                })
+        let backend = 'http://' + myIp + ':' + port ;
 
-                btnTomadas.forEach(button => {
-                    button.disabled = true;
-                })
+        async function getEstadoTomada (id) {
+            let url = backend + "/api/tomadas/"+id+"/estado"
+            let estado = false;
 
-            }
+            let result = await fetch(url);
+            console.log(result);
+        }
+
+        getEstadoTomada(1);
+
+
+
+        // verificar se automatico esta ligado ou não
+            // se estiver ligado
+                //desativar os botoes
+            // se estiver desligado
+                // buscar estado das tomadas e ativar respectivamente 
+        
 
         
     </script>
