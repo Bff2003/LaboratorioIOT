@@ -211,7 +211,19 @@ class Server {
         });
     }
 
-    createEndpointsFront() {
+    async createEndpointsFront() {
+        this.app.get('/', async (req, res) => {
+            console.log(this.lastData);
+
+            res.render('index', {
+                humidade: this.lastData.humidade,
+                temperatura: this.lastData.temperatura,
+                lux: this.lastData.lux,
+                automatico: this.automaticMode.state,
+                tomada1: this.tomadas[0].estado,
+                tomada2: this.tomadas[1].estado,
+            });
+        });
     }
 
     // Start the server
@@ -229,6 +241,7 @@ class Server {
         this.connectMqtt("localhost", 1884); // connect to the MQTT broker
         this.subscribeMqtt("sensor/temperatura", async (topic, message) => {
             this.sendDataToEmoncms(1, { "temperatura": parseFloat(message.toString()) });
+            this.lastData.temperatura = message.toString();
             console.log("temperatura: " + message + "ºC");
 
             // if temperature is below 15ºC, turn off all tomadas
@@ -243,10 +256,12 @@ class Server {
             }
         });
         this.subscribeMqtt("sensor/humidade", async (topic, message) => {
+            this.lastData.humidade = parseFloat(message.toString());
             this.sendDataToEmoncms(1, { "humidade": parseFloat(message.toString()) });
             console.log("humidade: " + message);
         });
         this.subscribeMqtt("sensor/lux", async (topic, message) => {
+            this.lastData.lux = parseFloat(message.toString());
             this.sendDataToEmoncms(1, { "lux": parseFloat(message.toString()) });
             console.log("lux: " + message);
             if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.lux.min) {

@@ -1,83 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>App Pica</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="requisicaoAPI.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cada Inteligente</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        .linha {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mostradores {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .mostrador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+
+            min-width: 200px;
+        }
+
+        .container #btnAutomatico {
+            height: 50px;
+            width: 700px;
+        }
+
+        .linha .tomada {
+            margin: 10px;
+            padding: 20px 20px;
+            border: 1px solid black;
+            border-radius: 5px;
+            min-width: 340px;
+        }
+
+        button:hover {
+            cursor: pointer;
+            /* background-color: #ddd; */
+        }
+
+        button:active {
+            background-color: #ccc;
+        }
+
+        .active {
+            background-color: rgb(37, 150, 190);
+        }
+    </style>
 </head>
+
 <body>
-  <h1>App Pica</h1>
-  
-  <div class="value-display">
-    <label>Temperatura</label>
-    <span class="value">100</span>
-    <span class="unit">ºC</span>
-  </div>
-  <div class="value-display">
-    <label>Humidade</label>
-    <span class="value">40</span>
-  </div>
-  <div class="value-display">
-    <label>Luz</label>
-    <span class="value">80</span>
-  </div>
-  <br><br>
+    <h1>Casa Inteligente</h1>
+    <div class="container">
+        <div class="mostradores">
+            <div class="mostrador">
+                <h2>Humidade</h2>
+                <p id="humidade"><%= humidade %>%</p>
+            </div>
+            <div class="mostrador">
+                <h2>Temperatura</h2>
+                <p id="temperatura"><%= temperatura %>ºC</p>
+            </div>
+            <div class="mostrador">
+                <h2>luz</h2>
+                <p id="luz"><%= lux %>lx</p>
+            </div>
+        </div>
 
-  <div class="switch">
-    <input type="checkbox" id="switch1" onclick="showStatus('switch1')">
-    <label class="slider" for="switch1"></label>
-  </div>
-  <span class="label">Modo automático: <span id="status1">OFF</span></span>
-  <br><br>
-  
-  <div class="switch">
-    <input type="checkbox" id="switch2" onclick="showStatus('switch2')" disabled>
-    <label class="slider" for="switch2"></label>
-  </div>
-  <span class="label">Tomada 1: <span id="status2">OFF</span></span>
-  <br><br>
-  
-  <div class="switch">
-    <input type="checkbox" id="switch3" onclick="showStatus('switch3')" disabled>
-    <label class="slider" for="switch3"></label>
-  </div>
-  <span class="label">Tomada 2: <span id="status3">OFF</span></span>
-  <br><br>
-  
-  <div class="switch">
-    <input type="checkbox" id="switch4" onclick="showStatus('switch4')" disabled>
-    <label class="slider" for="switch4"></label>
-  </div>
-  <span class="label">Tomada 3: <span id="status4">OFF</span></span>
+        <div class="linha">
+            <button id='btnAutomatico' <% if (automatico) { %> class="active" <% } %>>Automatico</button>
+        </div>
 
-  <script>
-    function showStatus(switchId) {
-      var statusLabel = document.getElementById('status' + switchId.slice(-1));
-      var switchElement = document.getElementById(switchId);
-      statusLabel.textContent = switchElement.checked ? 'ON' : 'OFF';
-      
-      // Disable or enable switches 2, 3, and 4 based on the status of switch 1
-      var switch1 = document.getElementById('switch1');
-      var switch2 = document.getElementById('switch2');
-      var switch3 = document.getElementById('switch3');
-      var switch4 = document.getElementById('switch4');
-      
-      if (switch1.checked) {
-        switch2.checked = false;
-        switch3.checked = false;
-        switch4.checked = false;
-        switch2.disabled = true;
-        switch3.disabled = true;
-        switch4.disabled = true;
-        document.getElementById('status2').textContent = 'OFF';
-        document.getElementById('status3').textContent = 'OFF';
-        document.getElementById('status4').textContent = 'OFF';
-      } else {
-        switch2.disabled = false;
-        switch3.disabled = false;
-        switch4.disabled = false;
-      }
-    }
-  </script>
+        <div class="linha">
+            <button id="btnTomada1" class="tomada <% if (tomada1) { %> active <% } %>">Tomada 1</button>
+            <button id="btnTomada2" class="tomada <% if (tomada2) { %> active <% } %>">Tomada 2</button>
+        </div>
+    </div>
+
+    <script>
+        // on click in button all buttons add class active
+        const btnTomadas = document.querySelectorAll('.tomada');
+        btnTomadas.forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('active');
+            })
+        })
+
+        let btnAutomatico = document.getElementById('btnAutomatico');
+        btnAutomatico.addEventListener('click', () => {
+            if (btnAutomatico.classList.contains('active')) {
+                btnAutomatico.classList.remove('active');
+                // enable all buttons
+                btnTomadas.forEach(button => {
+                    button.disabled = false;
+                })
+            } else{
+                btnAutomatico.classList.toggle('active');
+                // disable all buttons
+                btnTomadas.forEach(button => {
+                    button.classList.remove('active');
+                })
+
+                btnTomadas.forEach(button => {
+                    button.disabled = true;
+                })
+            }
+        })
+
+        if (btnAutomatico.classList.contains('active')) {
+                btnAutomatico.classList.remove('active');
+                // enable all buttons
+                btnTomadas.forEach(button => {
+                    button.disabled = false;
+                })
+            } else{
+                btnAutomatico.classList.toggle('active');
+                // disable all buttons
+                btnTomadas.forEach(button => {
+                    button.classList.remove('active');
+                })
+
+                btnTomadas.forEach(button => {
+                    button.disabled = true;
+                })
+
+            }
+
+        
+    </script>
 </body>
+
 </html>

@@ -1,76 +1,60 @@
-body {
+h1 {
     text-align: center;
-    font-family: Arial, sans-serif;
 }
 
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
+.linha {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+.container {
+    display: flex;
+    flex-direction: column;
+}   
+
+.mostradores {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
-}
-
-input:checked + .slider {
-    background-color: #2196F3;
-}
-
-input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
-}
-
-.label {
-    display: inline-block;
-    margin-left: 10px;
-}
-
-.value-display {
-    display: inline-block;
-    border: 1px solid #000;
+.mostrador {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
     padding: 10px;
-    font-family: Arial, sans-serif;
+    border: 1px solid black;
+    border-radius: 5px;
+
+    min-width: 200px;
 }
 
-.value {
-    font-size: 24px;
-    font-weight: bold;
+.container #btnAutomatico {
+    height: 50px;
+    width: 700px;
 }
 
-.unit {
-    font-size: 16px;
+.linha .tomada {
+    margin: 10px;
+    padding: 20px 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    min-width: 340px;
 }
+
+button:hover {
+    cursor: pointer;
+    /* background-color: #ddd; */
+}
+
+/* button:active {
+    background-color: #ccc;
+} */
+
+.active {
+    background-color: rgb(37, 150, 190);
+} 
