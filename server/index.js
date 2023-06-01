@@ -6,8 +6,9 @@ const env = require('dotenv').config(); // Environment variables
 
 class Server {
     constructor() {
-        this.app = express();
-        this.mqttClient = null;
+        this.frontend = express(); // Create the website server
+        this.backend = express(); // Create the backend server
+        this.mqttClient = this.connectMqtt("localhost", 1884);
         log4js.configure({
             appenders: {
                 console: { type: 'console' },
@@ -24,7 +25,7 @@ class Server {
         this.log.level = 'debug';
         this.log.info('Server started');
         
-        this.tomadas = [{"id": 1, "estado": 0}, {"id": 2, "estado": 0}, {"id": 3, "estado": 0}]
+        this.tomadas = [{"id": 1, "estado": 0}, {"id": 2, "estado": 0}]
         
         this.automaticMode = {
             "state": true,
@@ -43,18 +44,12 @@ class Server {
             "humidade": 0,
             "lux": 0
         }
-        this.getInitialDataFromEmocms();
+        // this.getInitialDataFromEmocms();
 
-        this.app.set('view engine', 'ejs');
+        // for forntend
+        this.frontend.set('view engine', 'ejs');
         console.log(__dirname+'\\views');
-        this.app.set('views', __dirname + '\\views');
-
-        // logger.trace('Trace message');
-        // logger.debug('Debug message');
-        // logger.info('Info message');
-        // logger.warn('Warn message');
-        // logger.error('Error message');
-        // logger.fatal('Fatal message');
+        this.frontend.set('views', __dirname + '\\views');
     }
 
     async getInitialDataFromEmocms() {
@@ -72,21 +67,15 @@ class Server {
     }
 
     connectMqtt(website, port) {
-        this.mqttClient = mqtt.connect("mqtt://" + website + ":" + port);
-        this.mqttClient.on('error', (err) => {
+        let mqttClient = mqtt.connect("mqtt://" + website + ":" + port);
+        mqttClient.on('error', (err) => {
             this.log.error(err);
             this.mqttClient.end();
         });
-        this.mqttClient.on('connect', () => {
+        mqttClient.on('connect', () => {
             this.log.info('MQTT client connected');
         });
-    }
-
-    // Subscribe to a topic MQTT
-    subscribeMqtt(topicToSubscribe, onMessage = (topic, message) => { console.log(topic + " - " + message); this.log.info(topic + " - " + message); }) {
-        this.mqttClient.subscribe(topicToSubscribe, { qos: 0 });
-        this.log.info('Subscribed to topic: ' + topicToSubscribe);
-        this.mqttClient.on('message', onMessage);
+        return mqttClient;
     }
 
     // Publish a message to a topic MQTT
@@ -144,7 +133,7 @@ class Server {
         this.tomadas[id-1].estado = 1;
         this.publishMqtt("tomadas", JSON.stringify({"id": id, "estado": 1}));
         const obj = { ["tomada" + id]: '1' };
-        this.sendDataToEmoncms(1, obj);
+        this.sendDataToEmoncms("tomadas", obj);
         this.log.info("Tomada " + id + " ligada!");
     }
 
@@ -152,7 +141,7 @@ class Server {
         this.tomadas[id-1].estado = 0;
         this.publishMqtt("tomadas", JSON.stringify({"id": id, "estado": 0}));
         const obj = { ["tomada" + id]: '0' };
-        this.sendDataToEmoncms(1, obj);
+        this.sendDataToEmoncms("tomadas", obj);
         this.log.info("Tomada " + id + " desligada!");
     }
 
@@ -170,11 +159,11 @@ class Server {
 
     // create endpoints for the API 'api/automaticMode'
     async createEndpointsBack() {
-        this.app.get('/api/automaticMode', (req, res) => {
+        this.backend.get('/api/automaticMode', (req, res) => {
             res.send(this.automaticMode.state);
         });
 
-        this.app.post('/api/automaticMode', (req, res) => {
+        this.backend.post('/api/automaticMode', (req, res) => {
             this.automaticMode.state = req.body.automaticMode;
             // expect 1 or 0
             if (req.body.automaticMode == undefined || (req.body.automaticMode != 1 && req.body.automaticMode != 0)) {
@@ -184,11 +173,11 @@ class Server {
             res.send(this.automaticMode.state);
         });
 
-        this.app.get('/api/automaticMode/temperatura', (req, res) => {
+        this.backend.get('/api/automaticMode/temperatura', (req, res) => {
             res.send(this.automaticMode.temperatura);
         });
 
-        this.app.post('/api/automaticMode/temperatura', (req, res) => {
+        this.backend.post('/api/automaticMode/temperatura', (req, res) => {
             // excepcted {"min": 15, "max": 25}
             if (req.body.min == undefined || req.body.max == undefined || req.body.min > req.body.max || req.body.min < 0 || req.body.max > 100) {
                 res.status(400).send("Bad request");
@@ -197,11 +186,11 @@ class Server {
             this.automaticMode.temperatura = req.body;
         });
 
-        this.app.get('/api/automaticMode/lux', (req, res) => {
+        this.backend.get('/api/automaticMode/lux', (req, res) => {
             res.send(this.automaticMode.lux);
         });
 
-        this.app.post('/api/automaticMode/lux', (req, res) => {
+        this.backend.post('/api/automaticMode/lux', (req, res) => {
             // excepcted {"min": 15, "max": 25}
             if (req.body.min == undefined || req.body.max == undefined || req.body.min > req.body.max || req.body.min < 0 || req.body.max > 100) {
                 res.status(400).send("Bad request");
@@ -212,7 +201,7 @@ class Server {
     }
 
     async createEndpointsFront() {
-        this.app.get('/', async (req, res) => {
+        this.frontend.get('/', async (req, res) => {
             console.log(this.lastData);
 
             res.render('index', {
@@ -230,8 +219,13 @@ class Server {
     async start() {
         console.log("Starting server...");
         console.log("EmonCMS URL: " + process.env.EMONCMS_URL+ "/input/view");
-        this.app.listen(3000, () => {
-            this.log.info('Server running on port ' + 3000);
+        this.frontend.listen(process.env.FRONTEND_PORT, () => {
+            console.log("Front-end running on port " + process.env.FRONTEND_PORT);
+            this.log.info('Front-end running on port ' + process.env.FRONTEND_PORT);
+        });
+        this.backend.listen(process.env.BACKEND_PORT, () => {
+            console.log("Back-end running on port " + process.env.BACKEND_PORT);
+            this.log.info('Back-end running on port ' + process.env.BACKEND_PORT);
         });
 
         this.createEndpointsBack(); // create endpoints for the API
@@ -239,37 +233,38 @@ class Server {
 
         // subscribe to the topic "sensor/temperatura" and "sensor/humidade" and "sensor/lux" in the MQTT broker and send the data to emoncms
         this.connectMqtt("localhost", 1884); // connect to the MQTT broker
-        this.subscribeMqtt("sensor/temperatura", async (topic, message) => {
-            this.sendDataToEmoncms(1, { "temperatura": parseFloat(message.toString()) });
-            this.lastData.temperatura = message.toString();
-            console.log("temperatura: " + message + "ºC");
+        this.mqttClient.subscribe("sensor/temperatura");
+        this.log.info("Subscribed to topic: sensor/temperatura");
+        this.mqttClient.subscribe("sensor/humidade");
+        this.log.info("Subscribed to topic: sensor/humidade");
+        this.mqttClient.subscribe("sensor/lux");
+        this.log.info("Subscribed to topic: sensor/lux");
 
-            // if temperature is below 15ºC, turn off all tomadas
-            if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.temperatura.min) {
-                this.log.info(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
-                console.log(`Ligar tomadas! Temperatura abaixo de ${this.automaticMode.temperatura.min}ºC`);
-                this.turnOnAllTomadas();
-            } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.temperatura.max) {
-                this.log.info(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
-                console.log(`Desligar tomadas! Temperatura acima de ${this.automaticMode.temperatura.max}ºC`);
-                this.turnOffAllTomadas();
-            }
-        });
-        this.subscribeMqtt("sensor/humidade", async (topic, message) => {
-            this.lastData.humidade = parseFloat(message.toString());
-            this.sendDataToEmoncms(1, { "humidade": parseFloat(message.toString()) });
-            console.log("humidade: " + message);
-        });
-        this.subscribeMqtt("sensor/lux", async (topic, message) => {
-            this.lastData.lux = parseFloat(message.toString());
-            this.sendDataToEmoncms(1, { "lux": parseFloat(message.toString()) });
-            console.log("lux: " + message);
-            if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.lux.min) {
-                console.log(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
-                this.log.info(`Ligar luzes! Lux abaixo de ${this.automaticMode.lux.min}`);
-            } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.lux.max) {
-                console.log(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
-                this.log.info(`Desligar luzes! Lux acima de ${this.automaticMode.lux.max}`);
+        this.mqttClient.on('message', async (topic, message) => {
+            if (topic == "sensor/temperatura") {
+                console.log("Temperatura: " + message.toString());
+                this.lastData.temperatura = message.toString();
+                this.sendDataToEmoncms("sensores", {"temperatura": message.toString()});
+
+                if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.temperatura.min) {
+                    this.turnOnAllTomadas();
+                } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.temperatura.max) {
+                    this.turnOffAllTomadas();
+                }
+            } else if (topic == "sensor/humidade") {
+                console.log("Humidade: " + message.toString());
+                this.lastData.humidade = message.toString();
+                this.sendDataToEmoncms("sensores", {"humidade": message.toString()});
+            } else if (topic == "sensor/lux") {
+                console.log("Lux: " + message.toString());
+                this.lastData.lux = message.toString();
+                this.sendDataToEmoncms("sensores", {"lux": message.toString()});
+
+                if (this.automaticMode.state && parseFloat(message.toString()) < this.automaticMode.lux.min) {
+                    this.turnOnAllTomadas();
+                } else if (this.automaticMode.state && parseFloat(message.toString()) > this.automaticMode.lux.max) {
+                    this.turnOffAllTomadas();
+                }
             }
         });
     }
