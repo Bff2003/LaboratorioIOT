@@ -38,6 +38,13 @@ class Server {
             }
         }
 
+        this.lastData = {
+            "temperatura": 0,
+            "humidade": 0,
+            "lux": 0
+        }
+        this.getInitialDataFromEmocms();
+
         this.app.set('view engine', 'ejs');
         console.log(__dirname+'\\views');
         this.app.set('views', __dirname + '\\views');
@@ -48,6 +55,20 @@ class Server {
         // logger.warn('Warn message');
         // logger.error('Error message');
         // logger.fatal('Fatal message');
+    }
+
+    async getInitialDataFromEmocms() {
+        this.lastData = {
+            "temperatura": (await this.getDataFromInputInEmoncms("1", "temperatura")).value,
+            "humidade": (await this.getDataFromInputInEmoncms("1", "humidade")).value,
+            "lux": (await this.getDataFromInputInEmoncms("1", "lux")).value
+        }
+
+        this.tomadas.forEach(async (tomada) => {
+            tomada.estado = (await this.getDataFromInputInEmoncms("1", "tomada" + tomada.id)).value;
+        });
+        console.log(this.tomadas);
+        console.log(this.lastData);
     }
 
     connectMqtt(website, port) {
