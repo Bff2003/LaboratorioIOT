@@ -232,7 +232,7 @@ class Server {
         this.createEndpointsFront(); // create endpoints for the front-end
 
         // subscribe to the topic "sensor/temperatura" and "sensor/humidade" and "sensor/lux" in the MQTT broker and send the data to emoncms
-        this.connectMqtt("localhost", 1884); // connect to the MQTT broker
+        this.connectMqtt(process.env.MQTT_HOST, process.env.MQTT_PORT); // connect to the MQTT broker
         this.mqttClient.subscribe("sensor/temperatura");
         this.log.info("Subscribed to topic: sensor/temperatura");
         this.mqttClient.subscribe("sensor/humidade");
