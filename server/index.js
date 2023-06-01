@@ -17,7 +17,7 @@ class Server {
 
     constructor(tomadas = []) {
         this.frontEnd = new FrontEnd();
-        this.backEnd = new BackEnd();
+        this.backEnd = new BackEnd(this);
         this.tomadas = tomadas;
         this.automaticMode = new AutomaticMode(tomadas);
         // this.mqttClient = this.connectMqtt("localhost", 1884);
