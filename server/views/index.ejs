@@ -67,6 +67,30 @@
         .active {
             background-color: rgb(37, 150, 190);
         }
+
+        @media only screen and (max-width: 900px) {
+            .mostradores {
+                flex-direction: column;
+                max-width: 90vw;
+            }
+
+            .container #btnAutomatico {
+                height: 13vh;
+                width: 90vw;
+            }
+
+            .tomadas {
+                flex-direction: column;
+            } 
+
+            .linha .tomada {
+                min-width: 90vw;
+            }
+
+            .mostrador {
+                min-width: 90vw;
+            }
+        }
     </style>
 </head>
 
@@ -76,15 +100,21 @@
         <div class="mostradores">
             <div class="mostrador">
                 <h2>Humidade</h2>
-                <p id="humidade"><%= humidade %>%</p>
+                <p id="humidade">
+                    <%= humidade %>%
+                </p>
             </div>
             <div class="mostrador">
                 <h2>Temperatura</h2>
-                <p id="temperatura"><%= temperatura %>ºC</p>
+                <p id="temperatura">
+                    <%= temperatura %>ºC
+                </p>
             </div>
             <div class="mostrador">
                 <h2>luz</h2>
-                <p id="luz"><%= lux %>lx</p>
+                <p id="luz">
+                    <%= lux %>lx
+                </p>
             </div>
         </div>
 
@@ -92,7 +122,7 @@
             <button id='btnAutomatico'>Automatico</button>
         </div>
 
-        <div class="linha">
+        <div class="linha tomadas">
             <button id="btnTomada1" class="tomada">Tomada 1</button>
             <button id="btnTomada2" class="tomada">Tomada 2</button>
         </div>
@@ -106,10 +136,10 @@
         let myIp = "<%= ip %>";
         let port = <%= backendPort %>;
 
-        let backend = 'http://' + myIp + ':' + port ;
+        let backend = 'http://' + myIp + ':' + port;
 
-        async function getEstadoTomada (id) {
-            let url = backend + "/api/tomadas/"+id+"/estado"
+        async function getEstadoTomada(id) {
+            let url = backend + "/api/tomadas/" + id + "/estado"
             let estado = false;
 
             let result = await fetch(url);
@@ -125,9 +155,9 @@
                 //desativar os botoes
             // se estiver desligado
                 // buscar estado das tomadas e ativar respectivamente 
-        
 
-        
+
+
     </script>
 </body>
 
