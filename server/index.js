@@ -13,14 +13,13 @@ const EmonCMS = require('./emonCMS.js'); // EmonCMS class
 
 
 class Server {
-    static mqttClient = Server.connectMqtt("localhost", 1884);
+    static mqttClient = Server.connectMqtt(process.env.MQTT_IP, process.env.MQTT_PORT);
 
     constructor(tomadas = []) {
         this.frontEnd = new FrontEnd();
         this.backEnd = new BackEnd(this);
         this.tomadas = tomadas;
         this.automaticMode = new AutomaticMode(tomadas);
-        // this.mqttClient = this.connectMqtt("localhost", 1884);
         this.emonCMS = new EmonCMS();
 
         Tomada.mqtt = Server.mqttClient;
