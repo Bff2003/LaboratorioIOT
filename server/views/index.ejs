@@ -241,15 +241,30 @@
                     // buscar estado das tomadas e ativar respetivamente
         // } 
 
-        // onclick automático () => {
+        btnAutomatico.onclick = async () => {
             // verificar se já está ativo 
-                // se estiver ativo
-                    // fazer requisição para desativar modo automático
-                    // colocar botões clickable
-                // se estiver desativo
-                    // fazer requisição para ativar modo automático
-                    // desativar botões
-        // }
+            let automaticMode = (await requestGetAutomaticMode()).body.state;
+            
+            if(automaticMode){ // se estiver ativo
+                // fazer requisição para desativar modo automático
+                await requestDesligarAutomaticMode();
+
+                // colocar botões clickable
+                btnAutomatico.classList.remove('active');
+                btnTomadas.forEach(btn => {
+                    btn.disabled = false;
+                });
+            }else{ // se estiver desativo
+                await requestLigarAutomaticMode(); // fazer requisição para ativar modo automático
+                
+                // desativar botões
+                btnAutomatico.classList.add('active');
+                btnTomadas.forEach(btn => {
+                    btn.disabled = true;
+                });
+            }
+        }
+
 
         // onclick tomada () => {
             // verificar se modo automático está ligado
