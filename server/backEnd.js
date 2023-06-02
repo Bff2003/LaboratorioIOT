@@ -84,18 +84,6 @@ class BackEnd {
             res.send(this.server.automaticMode);
         });
 
-        this.backend.get('/api/sensors/temperatura', (req, res) => {
-            res.send(this.server.temperatura);
-        });
-
-        this.backend.get('/api/sensors/humidade', (req, res) => {
-            res.send(this.server.humidade);
-        });
-
-        this.backend.get('/api/sensors/lux', (req, res) => {
-            res.send(this.server.lux);
-        });
-
         this.backend.get('/api/sensors', (req, res) => {
             res.send({
                 temperatura: this.server.temperatura,

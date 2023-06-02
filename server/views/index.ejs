@@ -193,6 +193,45 @@
             };
         }
 
+        async function resquestGetTemperatura(){
+            let url = backend + "/api/sensors/temperatura"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function resquestGetHumidade(){
+            let url = backend + "/api/sensors/humidade"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function resquestGetLux(){
+            let url = backend + "/api/sensors/lux"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function atualizaMostradores(){
+            let temperatura = await resquestGetTemperatura();
+            let humidade = await resquestGetHumidade();
+            let lux = await resquestGetLux();
+
+            document.getElementById('temperatura').innerHTML = temperatura.body + "ºC";
+            document.getElementById('humidade').innerHTML = humidade.body + "%";
+            document.getElementById('luz').innerHTML = lux.body + "lx";
+        }
+
+        setInterval(atualizaMostradores, 1000);
+
         // ao abrir pagina () => {
             // buscar humidade, temperatura e luz
             // atualizar mostradores
