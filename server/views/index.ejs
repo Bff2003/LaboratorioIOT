@@ -81,7 +81,7 @@
 
             .tomadas {
                 flex-direction: column;
-            } 
+            }
 
             .linha .tomada {
                 min-width: 90vw;
@@ -166,7 +166,7 @@
             };
         }
 
-        async function requestGetAutomaticMode(){
+        async function requestGetAutomaticMode() {
             let url = backend + "/api/automaticMode"
             let result = await fetch(url);
             return {
@@ -175,7 +175,7 @@
             };
         }
 
-        async function requestLigarAutomaticMode(){
+        async function requestLigarAutomaticMode() {
             let url = backend + "/api/automaticMode/ligar"
             let result = await fetch(url);
             return {
@@ -184,7 +184,7 @@
             };
         }
 
-        async function requestDesligarAutomaticMode(){
+        async function requestDesligarAutomaticMode() {
             let url = backend + "/api/automaticMode/desligar"
             let result = await fetch(url);
             return {
@@ -193,7 +193,7 @@
             };
         }
 
-        async function requestGetDados(){
+        async function requestGetDados() {
             let url = backend + "/api/sensors/"
             let result = await fetch(url);
             return {
@@ -202,7 +202,7 @@
             };
         }
 
-        async function atualizaMostradores(){
+        async function atualizaMostradores() {
             let dados = (await requestGetDados()).body;
 
             document.getElementById('temperatura').innerHTML = dados.temperatura + "ºC";
@@ -210,7 +210,7 @@
             document.getElementById('luz').innerHTML = dados.lux + "lx";
         }
 
-        async function de1em1segundo(){
+        async function de1em1segundo() {
             await atualizaMostradores();
         }
 
@@ -244,7 +244,7 @@
         btnAutomatico.onclick = async () => {
             // verificar se já está ativo 
             let automaticMode = (await requestGetAutomaticMode()).body.state;
-            
+
             if(automaticMode){ // se estiver ativo
                 // fazer requisição para desativar modo automático
                 await requestDesligarAutomaticMode();
@@ -256,7 +256,7 @@
                 });
             }else{ // se estiver desativo
                 await requestLigarAutomaticMode(); // fazer requisição para ativar modo automático
-                
+
                 // desativar botões
                 btnAutomatico.classList.add('active');
                 btnTomadas.forEach(btn => {
@@ -266,6 +266,30 @@
         }
 
 
+        btnTomadas.forEach(async (btn) => {
+            let id = btn.id.replace('btnTomada', '');
+
+            let estado = (await requestGetEstadoTomada(id)).body;
+
+            if (estado) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+
+            btn.onclick = async () => {
+                if (btn.disabled) return; // se o botão estiver desativado não fazer nada (modo automático ativo)
+
+                let estado = (await requestGetEstadoTomada(id)).body;
+                if (estado) {
+                    await requestDesligarTomada(id);
+                    btn.classList.remove('active');
+                } else {
+                    await requestLigarTomada(id);
+                    btn.classList.add('active');
+                }
+            }
+        });
         // onclick tomada () => {
             // verificar se modo automático está ligado
             // se estiver ligado
