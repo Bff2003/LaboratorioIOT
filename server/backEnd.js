@@ -10,7 +10,7 @@ const cors = require('cors');
 
 class BackEnd {
     constructor(server) {
-        this.ip = ip.address();
+        this.ip = process.env.BACKEND_IP || ip.address();
         this.port = process.env.BACKEND_PORT || 3000;
         this.backend = express();
         this.backend.use(cors());

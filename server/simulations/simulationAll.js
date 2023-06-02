@@ -1,5 +1,7 @@
 const mqtt = require('mqtt'); // MQTT client
-mqttClient = mqtt.connect("mqtt://localhost:1884");
+const env = require('dotenv').config(); // Environment variables
+
+mqttClient = mqtt.connect("mqtt://"+ process.env.MQTT_IP + ":" + process.env.MQTT_PORT);
 mqttClient.on('connect', () => {
     console.log('MQTT client connected');
 });
