@@ -6,15 +6,17 @@ const env = require('dotenv').config(); // Environment variables
 const ip = require("ip"); // Get current ip address
 const Server = require('./index.js');
 const Tomada = require('./tomada.js');
+const cors = require('cors');
 
 class BackEnd {
     constructor(server) {
         this.ip = ip.address();
         this.port = process.env.BACKEND_PORT || 3000;
         this.backend = express();
+        this.backend.use(cors());
         this.backend.use(express.json());
         this.backend.use(express.urlencoded({ extended: true }));
-
+        
         this.server = server;
 
         this.backend.listen(this.port, () => {
