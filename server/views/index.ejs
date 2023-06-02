@@ -138,23 +138,109 @@
 
         let backend = 'http://' + myIp + ':' + port;
 
-        async function getEstadoTomada(id) {
-            let url = backend + "/api/tomadas/" + id + "/estado"
-            let estado = false;
+        async function requestGetEstadoTomada(id) {
+            let url = backend + "/api/tomada/" + id
 
             let result = await fetch(url);
-            console.log(result);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
         }
 
-        getEstadoTomada(1);
+        async function requestLigarTomada(id) {
+            let url = backend + "/api/tomada/" + id + "/ligar"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function requestDesligarTomada(id) {
+            let url = backend + "/api/tomada/" + id + "/desligar"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function requestGetAutomaticMode(){
+            let url = backend + "/api/automaticMode"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function requestLigarAutomaticMode(){
+            let url = backend + "/api/automaticMode/ligar"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        async function requestDesligarAutomaticMode(){
+            let url = backend + "/api/automaticMode/desligar"
+            let result = await fetch(url);
+            return {
+                statusCode: result.status,
+                body: await result.json()
+            };
+        }
+
+        // ao abrir pagina () => {
+            // buscar humidade, temperatura e luz
+            // atualizar mostradores
+
+            // verificar se automático esta ligado ou não
+                // se estiver ligado
+                    //desativar os botões
+                // se estiver desligado
+                    // buscar estado das tomadas e ativar respetivamente
+        // }
 
 
+        // de 1 em 1 segundo () => {
+            // buscar humidade, temperatura e luz
+            // atualizar mostradores
+        // }
 
-        // verificar se automatico esta ligado ou não
+        // de 5 em 5 segundos () => {
+            // verificar se automático esta ligado ou não
+                // se estiver ligado
+                    //desativar os botões
+                // se estiver desligado
+                    // buscar estado das tomadas e ativar respetivamente
+        // } 
+
+        // onclick automático () => {
+            // verificar se já está ativo 
+                // se estiver ativo
+                    // fazer requisição para desativar modo automático
+                    // colocar botões clickable
+                // se estiver desativo
+                    // fazer requisição para ativar modo automático
+                    // desativar botões
+        // }
+
+        // onclick tomada () => {
+            // verificar se modo automático está ligado
             // se estiver ligado
-                //desativar os botoes
+                // não fazer nada
             // se estiver desligado
-                // buscar estado das tomadas e ativar respectivamente 
+                // verificar se tomada está ligada ou desligada
+                    // se estiver ligada
+                        // fazer requisição para desligar tomada
+                        // desativar botão
+                    // se estiver desligada
+                        // fazer requisição para ligar tomada
+                        // ativar botão
+        // }
 
 
 
