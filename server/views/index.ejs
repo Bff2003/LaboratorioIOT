@@ -101,19 +101,19 @@
             <div class="mostrador">
                 <h2>Humidade</h2>
                 <p id="humidade">
-                    <%= humidade %>%
+                    <!-- <%= humidade %>% -->
                 </p>
             </div>
             <div class="mostrador">
                 <h2>Temperatura</h2>
                 <p id="temperatura">
-                    <%= temperatura %>ºC
+                    <!-- <%= temperatura %>ºC -->
                 </p>
             </div>
             <div class="mostrador">
                 <h2>luz</h2>
                 <p id="luz">
-                    <%= lux %>lx
+                    <!-- <%= lux %>lx -->
                 </p>
             </div>
         </div>
@@ -153,7 +153,7 @@
             let result = await fetch(url);
             return {
                 statusCode: result.status,
-                body: await result.json()
+                body: await result.text()
             };
         }
 
@@ -162,7 +162,7 @@
             let result = await fetch(url);
             return {
                 statusCode: result.status,
-                body: await result.json()
+                body: await result.text()
             };
         }
 
@@ -180,7 +180,7 @@
             let result = await fetch(url);
             return {
                 statusCode: result.status,
-                body: await result.json()
+                body: await result.text()
             };
         }
 
@@ -189,7 +189,7 @@
             let result = await fetch(url);
             return {
                 statusCode: result.status,
-                body: await result.json()
+                body: await result.text()
             };
         }
 
@@ -209,31 +209,6 @@
             document.getElementById('humidade').innerHTML = dados.humidade + "%";
             document.getElementById('luz').innerHTML = dados.lux + "lx";
         }
-
-        async function de1em1segundo() {
-            await atualizaMostradores();
-        }
-
-        setInterval(de1em1segundo, 1000);
-
-        // ao abrir pagina () => {
-        // buscar humidade, temperatura e luz
-        // atualizar mostradores
-
-        // verificar se automático esta ligado ou não
-        // se estiver ligado
-        //desativar os botões
-        // se estiver desligado
-        // buscar estado das tomadas e ativar respetivamente
-        // }
-
-
-        // de 1 em 1 segundo () => {
-        // buscar humidade, temperatura e luz
-        // atualizar mostradores
-        // }
-
-        setInterval(verificarModoAutomatico, 5000);
 
         async function verificarModoAutomatico() {
             let automaticMode = (await requestGetAutomaticMode()).body.state;
@@ -260,78 +235,92 @@
             }
         }
 
-        // de 5 em 5 segundos () => {
-        // verificar se automático esta ligado ou não
-        // se estiver ligado
-        //desativar os botões
-        // se estiver desligado
-        // buscar estado das tomadas e ativar respetivamente
-        // } 
+        async function atualizaTodosBotoes(){
+            console.log('atualizaTodosBotoes');
+            let modoAutomatico = (await requestGetAutomaticMode()).body.state;
+            console.log('\tModo automatico: ' + modoAutomatico);
+            console.log('\tTomadas: ');
 
-        btnAutomatico.onclick = async () => {
-            // verificar se já está ativo 
-            let automaticMode = (await requestGetAutomaticMode()).body.state;
+            btnTomadas.forEach(async btn => {
+                let id = btn.id.replace('btnTomada', '');
+                let estado = (await requestGetEstadoTomada(id)).body;
+                console.log('\t\tTomada ' + id + ' ' + estado);
 
-            if (automaticMode) { // se estiver ativo
-                // fazer requisição para desativar modo automático
-                await requestDesligarAutomaticMode();
+                if (modoAutomatico) btn.disabled = true;
+                else btn.disabled = false;
 
-                // colocar botões clickable
-                btnAutomatico.classList.remove('active');
-                btnTomadas.forEach(btn => {
-                    btn.disabled = false;
-                });
-            } else { // se estiver desativo
-                await requestLigarAutomaticMode(); // fazer requisição para ativar modo automático
+                if (estado) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
 
-                // desativar botões
-                btnAutomatico.classList.add('active');
-                btnTomadas.forEach(btn => {
-                    btn.disabled = true;
-                });
-            }
+            if (modoAutomatico) btnAutomatico.classList.add('active');
+            else btnAutomatico.classList.remove('active');
         }
 
-
-        btnTomadas.forEach(async (btn) => {
-            let id = btn.id.replace('btnTomada', '');
-
-            let estado = (await requestGetEstadoTomada(id)).body;
-
-            if (estado) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-
-            btn.onclick = async () => {
-                if (btn.disabled) return; // se o botão estiver desativado não fazer nada (modo automático ativo)
-
+        async function atualizaCoresTomadas(){
+            console.log('atualizaCoresTomadas');
+            btnTomadas.forEach(async btn => {
+                let id = btn.id.replace('btnTomada', '');
                 let estado = (await requestGetEstadoTomada(id)).body;
+
                 if (estado) {
-                    await requestDesligarTomada(id);
-                    btn.classList.remove('active');
-                } else {
-                    await requestLigarTomada(id);
                     btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
                 }
-            }
-        });
-        // onclick tomada () => {
-            // verificar se modo automático está ligado
-            // se estiver ligado
-                // não fazer nada
-            // se estiver desligado
-                // verificar se tomada está ligada ou desligada
-                    // se estiver ligada
-                        // fazer requisição para desligar tomada
-                        // desativar botão
-                    // se estiver desligada
-                        // fazer requisição para ligar tomada
-                        // ativar botão
-        // }
+            });
+        }
 
+        window.onload = function () {
+            
+            // atualiza mostradores
+            atualizaMostradores();
+            atualizaTodosBotoes();
+            
+            setInterval(atualizaMostradores, 1000);
+            setInterval( () => {
+                atualizaTodosBotoes();
+            }, 3000);
 
+            btnTomadas.forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if ((await requestGetAutomaticMode()).body.state) return;
+
+                    if (btn.classList.contains('active')) {
+                        let id = btn.id.replace('btnTomada', '');
+                        await requestDesligarTomada(id);
+                        btn.classList.remove('active');
+                    } else {
+                        let id = btn.id.replace('btnTomada', '');
+                        await requestLigarTomada(id);
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            btnAutomatico.addEventListener('click', async () => {
+                if (btnAutomatico.classList.contains('active')) {
+                    await requestDesligarAutomaticMode();
+                    btnAutomatico.classList.remove('active');
+                    btnTomadas.forEach(btn => {
+                        btn.disabled = false;
+                    });
+                } else {
+                    await requestLigarAutomaticMode();
+                    btnAutomatico.classList.add('active');
+                    btnTomadas.forEach(btn => {
+                        btn.disabled = true;
+                    });
+                }
+            });
+           
+        };
+        
+
+        
 
     </script>
 </body>
