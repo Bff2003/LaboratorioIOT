@@ -233,6 +233,33 @@
         // atualizar mostradores
         // }
 
+        setInterval(verificarModoAutomatico, 5000);
+
+        async function verificarModoAutomatico() {
+            let automaticMode = (await requestGetAutomaticMode()).body.state;
+
+            if (automaticMode) { // Se o modo automático estiver ativado
+                btnAutomatico.classList.add('active');
+                btnTomadas.forEach(btn => {
+                    btn.disabled = true;
+                });
+            } else { // Se o modo automático estiver desativado
+                btnAutomatico.classList.remove('active');
+                btnTomadas.forEach(async btn => {
+                    let id = btn.id.replace('btnTomada', '');
+                    let estado = (await requestGetEstadoTomada(id)).body;
+
+                    if (estado) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+
+                    btn.disabled = false;
+                });
+            }
+        }
+
         // de 5 em 5 segundos () => {
         // verificar se automático esta ligado ou não
         // se estiver ligado
