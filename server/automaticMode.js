@@ -13,13 +13,13 @@ class AutomaticMode {
         this.tomadas = tomadas;
 
         this.temperatura = {
-            min: 0,
-            max: 0
+            min: 20,
+            max: 30
         };
 
         this.luz = {
-            min: 0,
-            max: 0
+            min: 100,
+            max: 200
         }
     }
 
@@ -57,20 +57,21 @@ class AutomaticMode {
     onTemperaturaChange(temperatura) {
         if (this.state && temperatura < this.temperatura.min) {
             console.log("Temperatura: " + temperatura + " < " + this.temperatura.min);
-            this.turnOnAll();
+            // this.turnOnAll();
+            this.tomadas[0].turnOn();
         } else if (this.state && temperatura > this.temperatura.max) {
             console.log("Temperatura: " + temperatura + " > " + this.temperatura.max);
-            this.turnOffAll();
+            this.tomadas[0].turnOff();
         }
     }
 
     onLuzChange(luz) {
         if (this.state && luz < this.luz.min) {
             console.log("Luz: " + luz + " < " + this.luz.min);
-            this.turnOnAll();
+            this.tomadas[1].turnOn();
         } else if (this.state && luz > this.luz.max) {
             console.log("Luz: " + luz + " > " + this.luz.max);
-            this.turnOffAll();
+            this.tomadas[1].turnOff();
         }
     }
 }

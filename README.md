@@ -3,6 +3,9 @@
 ## Ideia do Projeto 
 Casa Inteligente
 
+- Tomada 1: Tomada com o aquecedor
+- Tomada 2: Tomada com a luz
+
 ### Especificidades:
 - Servidor:
     - O servidor decide se deve ligar as tomadas com base na temperatura
