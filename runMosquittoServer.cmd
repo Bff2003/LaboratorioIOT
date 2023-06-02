@@ -1,2 +1,7 @@
 cd "C:\Program Files\mosquitto"
-mosquitto -c mosquitto.conf -v
+if "%1"=="" (
+  set port=1883
+) else (
+  set port=%1
+)
+mosquitto -c mosquitto.conf -v -p %port%
