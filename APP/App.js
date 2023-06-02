@@ -3,9 +3,13 @@ import { WebView } from 'react-native-webview';
 
 class MyWeb extends Component {
   render() {
+    const IP = process.env.FRONTEND_IP;
+    const port = process.env.FRONTEND_PORT;
+    const uri = `http://${IP}:${port}/`;
+
     return (
       <WebView
-        source={{ uri: 'http://10.20.88.142:3000/' }}
+        source={{ uri }}
         style={{ flex: 1 }}
       />
     );
