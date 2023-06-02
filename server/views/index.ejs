@@ -217,35 +217,35 @@
         setInterval(de1em1segundo, 1000);
 
         // ao abrir pagina () => {
-            // buscar humidade, temperatura e luz
-            // atualizar mostradores
+        // buscar humidade, temperatura e luz
+        // atualizar mostradores
 
-            // verificar se automático esta ligado ou não
-                // se estiver ligado
-                    //desativar os botões
-                // se estiver desligado
-                    // buscar estado das tomadas e ativar respetivamente
+        // verificar se automático esta ligado ou não
+        // se estiver ligado
+        //desativar os botões
+        // se estiver desligado
+        // buscar estado das tomadas e ativar respetivamente
         // }
 
 
         // de 1 em 1 segundo () => {
-            // buscar humidade, temperatura e luz
-            // atualizar mostradores
+        // buscar humidade, temperatura e luz
+        // atualizar mostradores
         // }
 
         // de 5 em 5 segundos () => {
-            // verificar se automático esta ligado ou não
-                // se estiver ligado
-                    //desativar os botões
-                // se estiver desligado
-                    // buscar estado das tomadas e ativar respetivamente
+        // verificar se automático esta ligado ou não
+        // se estiver ligado
+        //desativar os botões
+        // se estiver desligado
+        // buscar estado das tomadas e ativar respetivamente
         // } 
 
         btnAutomatico.onclick = async () => {
             // verificar se já está ativo 
             let automaticMode = (await requestGetAutomaticMode()).body.state;
 
-            if(automaticMode){ // se estiver ativo
+            if (automaticMode) { // se estiver ativo
                 // fazer requisição para desativar modo automático
                 await requestDesligarAutomaticMode();
 
@@ -254,7 +254,7 @@
                 btnTomadas.forEach(btn => {
                     btn.disabled = false;
                 });
-            }else{ // se estiver desativo
+            } else { // se estiver desativo
                 await requestLigarAutomaticMode(); // fazer requisição para ativar modo automático
 
                 // desativar botões
