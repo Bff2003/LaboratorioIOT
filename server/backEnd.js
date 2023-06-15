@@ -10,7 +10,7 @@ const cors = require('cors');
 
 class BackEnd {
     constructor(server) {
-        this.ip = ip.address();
+        this.ip = process.env.BACKEND_IP || ip.address();
         this.port = process.env.BACKEND_PORT || 3000;
         this.backend = express();
         this.backend.use(cors());
@@ -82,18 +82,6 @@ class BackEnd {
         // get automatic Mode state
         this.backend.get('/api/automaticMode', (req, res) => {
             res.send(this.server.automaticMode);
-        });
-
-        this.backend.get('/api/sensors/temperatura', (req, res) => {
-            res.send(this.server.temperatura);
-        });
-
-        this.backend.get('/api/sensors/humidade', (req, res) => {
-            res.send(this.server.humidade);
-        });
-
-        this.backend.get('/api/sensors/lux', (req, res) => {
-            res.send(this.server.lux);
         });
 
         this.backend.get('/api/sensors', (req, res) => {

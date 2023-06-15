@@ -15,7 +15,7 @@ class FrontEnd {
             tomadas: []
         };
 
-        this.ip = ip.address();
+        this.ip = process.env.FRONTEND_IP || ip.address();
         this.port = process.env.FRONTEND_PORT || 3001;
         this.frontend = express();
         this.frontend.set('view engine', 'ejs');
@@ -47,7 +47,7 @@ class FrontEnd {
                 temperatura: this.lastDataToShow.temperatura,
                 lux: this.lastDataToShow.luz,
                 tomadas: this.lastDataToShow.tomadas, 
-                ip: this.ip, 
+                ip: process.env.FRONTEND_IP, 
                 backendPort: process.env.BACKEND_PORT 
             });
         });
