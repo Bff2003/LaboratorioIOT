@@ -79,6 +79,36 @@ class BackEnd {
             res.status(200).send('Automatic Mode desligado');
         });
 
+        // automatic mode get min and max values temperatura
+        this.backend.get('/api/automaticMode/temperatura/getMinMax', (req, res) => {
+            res.send({
+                min: this.server.automaticMode.temperatura.min,
+                max: this.server.automaticMode.temperatura.max
+            });
+        });
+
+        // automatic mode get min and max values lux
+        this.backend.get('/api/automaticMode/luz/getMinMax', (req, res) => {
+            res.send({
+                min: this.server.automaticMode.luz.min,
+                max: this.server.automaticMode.luz.max
+            });
+        });
+
+        // automatic mode set min and max values temperatura
+        this.backend.post('/api/automaticMode/temperatura/setMinMax', (req, res) => {
+            this.server.automaticMode.temperatura.min = req.body.min;
+            this.server.automaticMode.temperatura.max = req.body.max;
+            res.status(200).send('Automatic Mode temperatura min and max values set');
+        });
+
+        // automatic mode set min and max values lux
+        this.backend.post('/api/automaticMode/luz/setMinMax', (req, res) => {
+            this.server.automaticMode.luz.min = req.body.min;
+            this.server.automaticMode.luz.max = req.body.max;
+            res.status(200).send('Automatic Mode lux min and max values set');
+        });
+
         // get automatic Mode state
         this.backend.get('/api/automaticMode', (req, res) => {
             res.send(this.server.automaticMode);

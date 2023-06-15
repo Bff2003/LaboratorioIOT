@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cada Inteligente</title>
+    <title>Casa Inteligente</title>
     <!-- <link rel="stylesheet" href="styles.css"> -->
     <style>
         h1 {
@@ -60,12 +60,12 @@
             min-width: 340px;
         }
 
-        label{
+        label {
             margin-right: 10px;
             display: block;
         }
-        
-        .textbox{
+
+        .textbox {
             margin-right: 10px;
         }
 
@@ -133,7 +133,7 @@
         </div>
 
         <div class="linha">
-            <button id='btnAutomatico'>Automatico</button>
+            <button id='btnAutomatico'>Automático</button>
         </div>
 
         <div class="linha tomadas">
@@ -141,10 +141,16 @@
             <button id="btnTomada2" class="tomada">Tomada 2</button>
         </div>
 
-        <div class="linha textboxs">
-            <label for="html">Temperatura </label >  <input class="textbox" type="textbox" id="html" name="fav_language" placeholder="temp min"> <input type="textbox" id="html" name="fav_language" placeholder="temp max">
-            
-            <label for="html">Luz </label>  <input class="textbox" type="textbox" id="html" name="fav_language" placeholder="Luz min"> <input type="textbox" id="html" name="fav_language" placeholder="Luz max">
+        <div class="linha" id="inputsTemperaturas">
+            <label for="temperatura">Temperatura:</label>
+            <input type="number" id="temperatura_min" placeholder="Min">
+            <input type="number" id="temperatura_max" placeholder="Max">
+        </div>
+
+        <div class="linha" id="inputsLuz">
+            <label for="luz">Luz:</label>
+            <input type="number" id="luz_min" placeholder="Min">
+            <input type="number" id="luz_max" placeholder="Max">
         </div>
     </div>
 
@@ -255,7 +261,7 @@
             }
         }
 
-        async function atualizaTodosBotoes(){
+        async function atualizaTodosBotoes() {
             console.log('atualizaTodosBotoes');
             let modoAutomatico = (await requestGetAutomaticMode()).body.state;
             console.log('\tModo automatico: ' + modoAutomatico);
@@ -280,7 +286,7 @@
             else btnAutomatico.classList.remove('active');
         }
 
-        async function atualizaCoresTomadas(){
+        async function atualizaCoresTomadas() {
             console.log('atualizaCoresTomadas');
             btnTomadas.forEach(async btn => {
                 let id = btn.id.replace('btnTomada', '');
@@ -294,14 +300,108 @@
             });
         }
 
+        async function getValoresTemperaturaMinMax(){
+            let url = backend + "/api/automaticMode/temperatura/getMinMax"
+            let result = await fetch(url);
+            result = await result.text();
+            return JSON.parse(result);
+        }
+
+        async function setValoresTemperaturaMinMax(min, max){
+            let url = backend + "/api/automaticMode/temperatura/setMinMax"
+            //post 
+            let result = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify({
+                    min: min,
+                    max: max
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // status code != 200
+            if(result.status != 200){
+                alert("Erro ao atualizar valores de temperatura");
+            }
+        }
+
+        async function setValoresLuzMinMax(min, max){
+            let url = backend + "/api/automaticMode/luz/setMinMax"
+            let result = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify({
+                    min: min,
+                    max: max
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // status code != 200
+            if(result.status != 200){
+                alert("Erro ao atualizar valores de temperatura");
+            }
+        }
+
+        async function getValoresLuzMinMax(){
+            let url = backend + "/api/automaticMode/luz/getMinMax"
+            let result = await fetch(url);
+            result = await result.text();
+            return JSON.parse(result);
+        }
+
+        async function atualizaValoresTemperaturaMinMax(){
+            let valores = await getValoresTemperaturaMinMax();
+            document.getElementById('temperatura_min').value = valores.min;
+            document.getElementById('temperatura_max').value = valores.max;
+        }
+
+        async function atualizaValoresLuzMinMax(){
+            let valores = await getValoresLuzMinMax();
+            console.log(valores);
+            document.getElementById('luz_min').value = valores.min;
+            document.getElementById('luz_max').value = valores.max;
+        }
+
         window.onload = function () {
-            
+
             // atualiza mostradores
             atualizaMostradores();
             atualizaTodosBotoes();
-            
+            atualizaValoresTemperaturaMinMax();
+            atualizaValoresLuzMinMax();
+
+            // on change #temperatura_min #temperatura_max
+            document.getElementById('temperatura_min').addEventListener('change', async () => {
+                let min = document.getElementById('temperatura_min').value;
+                let max = document.getElementById('temperatura_max').value;
+                await setValoresTemperaturaMinMax(min, max);
+            });
+
+            document.getElementById('temperatura_max').addEventListener('change', async () => {
+                let min = document.getElementById('temperatura_min').value;
+                let max = document.getElementById('temperatura_max').value;
+                await setValoresTemperaturaMinMax(min, max);
+            });
+
+            // on change #luz_min #luz_max
+            document.getElementById("luz_min").addEventListener('change', async () => {
+                let min = document.getElementById('luz_min').value;
+                let max = document.getElementById('luz_max').value;
+                await setValoresLuzMinMax(min, max);
+            });
+
+            document.getElementById("luz_max").addEventListener('change', async () => {
+                let min = document.getElementById('luz_min').value;
+                let max = document.getElementById('luz_max').value;
+                await setValoresLuzMinMax(min, max);
+            });
+
             setInterval(atualizaMostradores, 1000);
-            setInterval( () => {
+            setInterval(() => {
                 atualizaTodosBotoes();
             }, 3000);
 
@@ -336,11 +436,11 @@
                     });
                 }
             });
-           
-        };
-        
 
-        
+        };
+
+
+
 
     </script>
 </body>
