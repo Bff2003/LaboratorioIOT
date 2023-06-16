@@ -7,8 +7,11 @@ const ip = require("ip"); // Get current ip address
 
 const Tomada = require('./tomada');
 
+const Logger = require('./logger.js'); // Logger class
+
 class AutomaticMode {
     constructor(tomadas = []){
+        this.log = Logger.createLogger("AutomaticMode");
         this.state = true;
         this.tomadas = tomadas;
 
@@ -39,16 +42,19 @@ class AutomaticMode {
     }
 
     addTomada(tomada) {
+        this.log.info("Adicionada tomada: " + tomada.nome);
         this.tomadas.push(tomada);
     }
 
     turnOnAll() {
+        this.log.info("Ligar todas as tomadas");
         this.tomadas.forEach(tomada => {
             tomada.turnOn();
         });
     }
 
     turnOffAll() {
+        this.log.info("Desligar todas as tomadas");
         this.tomadas.forEach(tomada => {
             tomada.turnOff();
         });
@@ -57,10 +63,12 @@ class AutomaticMode {
     onTemperaturaChange(temperatura) {
         if (this.state && temperatura < this.temperatura.min) {
             console.log("Temperatura: " + temperatura + " < " + this.temperatura.min);
+            this.log.info("Temperatura: " + temperatura + " < " + this.temperatura.min);
             // this.turnOnAll();
             this.tomadas[0].turnOn();
         } else if (this.state && temperatura > this.temperatura.max) {
             console.log("Temperatura: " + temperatura + " > " + this.temperatura.max);
+            this.log.info("Temperatura: " + temperatura + " > " + this.temperatura.max);
             this.tomadas[0].turnOff();
         }
     }
@@ -68,9 +76,11 @@ class AutomaticMode {
     onLuzChange(luz) {
         if (this.state && luz < this.luz.min) {
             console.log("Luz: " + luz + " < " + this.luz.min);
+            this.log.info("Luz: " + luz + " < " + this.luz.min);
             this.tomadas[1].turnOn();
         } else if (this.state && luz > this.luz.max) {
             console.log("Luz: " + luz + " > " + this.luz.max);
+            this.log.info("Luz: " + luz + " > " + this.luz.max);
             this.tomadas[1].turnOff();
         }
     }

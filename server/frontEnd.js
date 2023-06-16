@@ -5,8 +5,12 @@ const axios = require('axios'); // do http requests
 const env = require('dotenv').config(); // Environment variables
 const ip = require("ip"); // Get current ip address
 
+const Logger = require('./logger.js'); // Logger class
+
 class FrontEnd {
     constructor() {
+
+        this.log = Logger.createLogger("FrontEnd");
 
         this.lastDataToShow = {
             temperatura: 0,
@@ -23,6 +27,7 @@ class FrontEnd {
 
         this.frontend.listen(this.port, () => {
             console.log(`Frontend listening on port ${this.port}`);
+            this.log.info(`Frontend listening ${process.env.FRONTEND_IP}:${this.port}`);
         });
 
         this.createEndpoints();
@@ -42,6 +47,7 @@ class FrontEnd {
 
     createEndpoints() {
         this.frontend.get('/', (req, res) => {
+            this.log.info("GET / - " + req.ip);
             res.render('index', {
                 humidade: this.lastDataToShow.humidade,
                 temperatura: this.lastDataToShow.temperatura,

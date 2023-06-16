@@ -4,6 +4,7 @@ const express = require('express'); // Website server
 const axios = require('axios'); // do http requests
 const env = require('dotenv').config(); // Environment variables
 const ip = require("ip"); // Get current ip address
+const Logger = require('./logger.js'); // Logger class
 
 const Tomada = require('./tomada.js'); // Tomada class
 const AutomaticMode = require('./automaticMode.js'); // AutomaticMode class
@@ -22,6 +23,11 @@ class Server {
         this.automaticMode = new AutomaticMode(tomadas);
         this.emonCMS = new EmonCMS();
 
+        this.log = Logger.createLogger("Server");
+        this.log.info = this.log.info.bind(this.log);
+        this.log.info("Server started");
+
+
         Tomada.mqtt = Server.mqttClient;
 
         // data 
@@ -36,6 +42,7 @@ class Server {
 
         Server.mqttClient.on('message', (topic, message) => {
             this.mqttOnMessage(topic, message);
+            // this.log.info("MQTT: " + topic + ": " + message.toString());
         });
     }
 
@@ -66,6 +73,7 @@ class Server {
         mqttClient.on('connect', () => {
             console.log('MQTT client connected on mqtt://' + host + ':' + port);
         });
+        // this.log.info('MQTT client connected on mqtt://' + host + ':' + port);
         return mqttClient;
     }
 }

@@ -3,3 +3,4 @@
 *.vscode*
 *logs*
 *package-lock.json*
+*.log
