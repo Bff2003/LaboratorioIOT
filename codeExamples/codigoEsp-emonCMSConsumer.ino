@@ -27,13 +27,15 @@ void setup(){
 
 int getTomadaValue(int tomadaID) {
   // URL da requisição
-  String url = "http://emoncms.org/input/get/tomadas/tomada" + String(tomadaID) + "?apikey=your_api_key";
+  String url = "http://emoncms.org/input/get/tomadas/tomada" + String(tomadaID) + "?apikey=edaca87fdb9489eaf36b69a2ac42b36d";
 
   // Inicializa o objeto HTTPClient
   HTTPClient http;
 
+  http.begin(espClient, url);
+
   // Faz a requisição GET
-  int httpCode = http.GET(url);
+  int httpCode = http.GET();
 
   if (httpCode == HTTP_CODE_OK) {
     // Obtém a resposta da requisição
