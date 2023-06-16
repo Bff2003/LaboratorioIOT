@@ -1,81 +1,56 @@
-// ###########################
-// Subscriber MQTT
-// ###########################
-
-// Wifi
 #include <ESP8266WiFi.h>
-const char* ssid = "sensornet";
-const char* password = "sensor123";
-WiFiClient espClient = WiFiClient();
-
-// MQTT
 #include <PubSubClient.h>
-const char* mqtt_server = "<<IP DO SERVIDOR MQTT>>";
-PubSubClient client = PubSubClient(espClient);
 
-// Wifi
-void setup_wifi() {
-  delay(10);
-  // Conexão com a rede WiFi
+// WiFi
+const char *ssid = "sensornet"; // Enter your WiFi name
+const char *password = "sensor123";  // Enter WiFi password
+
+// MQTT Broker
+const char *mqtt_broker = "<<IP DO SERVIDOR MQTT>>";
+const char *topic = "tomadas";
+const int mqtt_port = 1884;
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup() {
+  // Set software serial baud to 115200;
+  Serial.begin(9600);
+  // connecting to a WiFi network
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+      delay(500);
+      Serial.println("Connecting to WiFi..");
   }
-}
-
-void reconnect() {
-  // Loop até que o cliente esteja conectado ao servidor MQTT
+  Serial.println("Connected to the WiFi network");
+  //connecting to a mqtt broker
+  client.setServer(mqtt_broker, mqtt_port);
+  client.setCallback(callback);
   while (!client.connected()) {
-    // Conexão com o servidor MQTT
-    if (client.connect("ESP8266Client")) {
-      // Assinatura do tópico MQTT
-      //client.subscribe(mqtt_topic);
-    } else {
-      // Aguardar 5 segundos antes de tentar novamente
-      delay(5000);
-    }
+        Serial.println("Connecting to MQTT...");
+        if (client.connect("ESP8266Client")) {
+            Serial.println("connected");
+        } else {
+            Serial.print("failed with state ");
+            Serial.print(client.state());
+            delay(2000);
+        }
   }
+  // subscribe
+  client.subscribe(topic);
 }
 
-// onMessage
-void callback(char* topic, byte* payload, unsigned int length) {
-    // imprime o tópico
-    Serial.print("Tópico: ");
-    Serial.println(topic);
-
-    // imprime a mensagem
-    Serial.print("Mensagem: ");
-    for (int i = 0; i < length; i++) {
-        Serial.print((char)payload[i]);
-    }
-    Serial.println();
+void callback(char *topic, byte *payload, unsigned int length) {
+  Serial.print("Message arrived in topic: ");
+  Serial.println(topic);
+  Serial.print("Message:");
+  for (int i = 0; i < length; i++) {
+      Serial.print((char) payload[i]);
+  }
+  Serial.println();
+  Serial.println("-----------------------");
 }
 
-// ###############################
-// # Setup e loop                #
-// ###############################
-
-void setup(){
-    Serial.begin(9600);
-
-    // setup wifi
-    setup_wifi();
-
-    // Inicializa o cliente MQTT
-    client.setServer(mqtt_server, 1883);
-    client.setCallback(callback);
-    client.subscribe("tomadas");
-}
-
-void loop(){
-    // Verifica se o cliente está conectado ao servidor MQTT
-    if (!client.connected()) {
-        reconnect();
-    }
-
-    // Verifica se há mensagens para serem enviadas
-    client.loop();
-
-    // Aguarda 1 segundo
-    delay(1000);
+void loop() {
+  client.loop();
 }
